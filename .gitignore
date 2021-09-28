@@ -1,4 +1,5 @@
 /backend/node_modules
 /frontend/node_modules
 
-/backend/config/utils/id_rsa_priv.pem
+/frontend/.env
+/backend/.env

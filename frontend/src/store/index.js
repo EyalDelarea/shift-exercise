@@ -8,6 +8,12 @@ export const store = createStore({
       message: "",
       type: "",
     },
+    isEditModalOpen:false,
+    editShiftInfo:{
+      start:'',
+      end:'',
+      index:''
+    }
   },
   mutations: {
     loadUser(state, payload) {
@@ -28,6 +34,13 @@ export const store = createStore({
         type: "",
       };
     },
+    setEditModal(state,bool){
+      state.isEditModalOpen = bool
+    }
+    ,
+    setEditShiftInfo(state,shift){
+      state.editShiftInfo =shift
+    }
   },
   getters: {
     auth(state) {

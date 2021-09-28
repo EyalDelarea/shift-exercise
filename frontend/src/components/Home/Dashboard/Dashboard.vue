@@ -38,6 +38,9 @@
         </div>
         <div v-else>
           <div class="container">
+            <div v-if="this.$store.state.isEditModalOpen">
+              <EditModal @edit-shift="editShift" />
+            </div>
             <button @click="openNewShiftWindow()">Add a New Shift</button>
             <div class="errorWrapper" v-if="this.response.message">
               <Error />
@@ -83,6 +86,7 @@ import Shift from "./shift.vue";
 import { getRequest } from "../../../node/getRequests";
 import { postRequest, putRequest } from "../../../node/postRequests";
 import Error from "../Utils/Error.vue";
+import EditModal from "../../EditModal.vue";
 
 export default {
   data() {
@@ -94,7 +98,7 @@ export default {
       shiftsArray: [],
     };
   },
-  components: { VueTimepicker, Shift, Error },
+  components: { VueTimepicker, Shift, Error, EditModal },
 
   methods: {
     redirect() {
@@ -102,7 +106,7 @@ export default {
         console.log("Not logged in -redirecting to login page");
         this.$router.push({ path: "/login" });
       } else {
-          this.$store.commit("clearServerResponse");
+        this.$store.commit("clearServerResponse");
         console.log("logged in");
       }
     },
@@ -135,25 +139,19 @@ export default {
         this.openNewShiftWindow();
       }
     },
-    async editShift() {},
+    async editShift(index, shiftObject) {
+      this.shiftsArray[index] = shiftObject;
+      //save to server
+      await this.updateShiftListOnServer();
+      this.$store.commit("setEditModal", false);
+    },
     async removeShift(objectIndex) {
-      this.$store.commit("setLoading", true);
-      this.shiftsArray = this.shiftsArray.filter(function (item, index) {
+      this.shiftsArray = this.shiftsArray.filter(function(item, index) {
         return index !== objectIndex;
       });
-      //This is a hack to remove proxy
-      const arr = [];
-      for (var [, data] of Object.entries({ ...this.shiftsArray })) {
-        arr.push({ ...data });
-      }
 
-      //update server
-      const userUniqueID = this?.$store.state?.auth?.payload?._id;
-      const res = await putRequest(arr, `shifts/${userUniqueID}`);
-      this.$store.commit("setServerResponse", res);
-      this.$store.commit("setLoading", false);
+      await this.updateShiftListOnServer();
     },
-    async saveShiftsArray() {},
     changeHandler(eventData, type) {
       const { displayTime } = eventData;
       switch (type) {
@@ -165,7 +163,22 @@ export default {
           break;
       }
     },
+    async updateShiftListOnServer() {
+      this.$store.commit("setLoading", true);
+      //This is a hack to remove proxy
+      const arr = [];
+      for (var [, data] of Object.entries({ ...this.shiftsArray })) {
+        arr.push({ ...data });
+      }
+      console.log(arr);
+      //update server
+      const userUniqueID = this?.$store.state?.auth?.payload?._id;
+      const res = await putRequest(arr, `shifts/${userUniqueID}`);
+      this.$store.commit("setServerResponse", res);
+      this.$store.commit("setLoading", false);
+    },
   },
+
   async created() {
     this.$store.commit("clearServerResponse");
     this.redirect();
@@ -175,13 +188,13 @@ export default {
     auth() {
       return this.$store.state?.auth?.payload;
     },
-    response(){
-      console.log(this.$store.state?.serverResponse)
-    return this.$store.state?.serverResponse;
-    }
+    response() {
+      console.log(this.$store.state?.serverResponse);
+      return this.$store.state?.serverResponse;
+    },
   },
   watch: {
-    auth: function () {
+    auth: function() {
       this.redirect();
     },
     shiftsArray: {
@@ -226,7 +239,7 @@ button :hover {
   color: black;
 }
 
-.errorWrapper{
+.errorWrapper {
   display: grid;
   justify-content: center;
   min-width: 200px;
