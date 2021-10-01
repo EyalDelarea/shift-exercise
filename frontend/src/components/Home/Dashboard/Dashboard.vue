@@ -61,7 +61,7 @@
               </div>
 
               <div v-else>
-                <div v-for="(item, index) in shiftsArray" :key="index">
+                <div v-for="(item, index) in shiftsArray" :key="index" class="shiftItem">
                   <Shift
                     :item="item"
                     :index="index"
@@ -146,7 +146,7 @@ export default {
       this.$store.commit("setEditModal", false);
     },
     async removeShift(objectIndex) {
-      this.shiftsArray = this.shiftsArray.filter(function(item, index) {
+      this.shiftsArray = this.shiftsArray.filter(function (item, index) {
         return index !== objectIndex;
       });
 
@@ -170,7 +170,6 @@ export default {
       for (var [, data] of Object.entries({ ...this.shiftsArray })) {
         arr.push({ ...data });
       }
-      console.log(arr);
       //update server
       const userUniqueID = this?.$store.state?.auth?.payload?._id;
       const res = await putRequest(arr, `shifts/${userUniqueID}`);
@@ -189,12 +188,11 @@ export default {
       return this.$store.state?.auth?.payload;
     },
     response() {
-      console.log(this.$store.state?.serverResponse);
       return this.$store.state?.serverResponse;
     },
   },
   watch: {
-    auth: function() {
+    auth: function () {
       this.redirect();
     },
     shiftsArray: {
@@ -223,6 +221,9 @@ form {
 
 .datePicker {
   text-align: center;
+}
+.shiftItem{
+  margin-top : 20px;
 }
 
 .saveButton {

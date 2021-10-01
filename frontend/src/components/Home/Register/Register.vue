@@ -2,7 +2,9 @@
   <div id="container">
     <form action="" class="form">
       <div class="imageWrapper">
-        <img src="https://img.icons8.com/external-bearicons-flat-bearicons/64/000000/external-sign-up-call-to-action-bearicons-flat-bearicons-1.png"/>
+        <img
+          src="https://img.icons8.com/external-bearicons-flat-bearicons/64/000000/external-sign-up-call-to-action-bearicons-flat-bearicons-1.png"
+        />
       </div>
       <h3>Register an account</h3>
       <input v-model="userID" type="text" placeholder="ID Number" />
@@ -43,19 +45,16 @@ export default {
         password: password,
       };
       const data = await postRequest(obj, "users/register");
-        this.$store.commit("setLoading", false);
-        console.log(data)
-      //TODO make this more generic
+      this.$store.commit("setLoading", false);
       if (data.type == "200") {
         this.$router.push({ path: "/login" });
         this.$store.commit("clearServerResponse");
       }
-      this.$store.commit('setServerResponse',data)
+      this.$store.commit("setServerResponse", data);
     },
   },
   computed: {
     showError() {
-      console.log(this.$store.state.serverResponse.message !== "");
       return this.$store.state.serverResponse.message !== "";
     },
   },
