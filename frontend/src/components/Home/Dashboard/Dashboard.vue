@@ -231,7 +231,6 @@ form {
 }
 .saveButton:hover {
   box-shadow: none;
-  /* background: rgba(0, 0, 0, 0.295); */
 }
 button :hover {
   transition: all 0.3s;

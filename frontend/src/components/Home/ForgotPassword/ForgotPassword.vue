@@ -5,7 +5,8 @@
       <input v-model="password" type="password" placeholder="id number" />
       <button @click.prevent="logIn(this.name, this.password)">Reset</button>
       <div>
-        <p>This feature isn't working yet </p>
+        <p>This feature isn't working yet... </p>
+        <p> <a href="/">Go back to home page</a></p>
       </div>
     </form>
   </div>
