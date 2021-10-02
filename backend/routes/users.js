@@ -4,18 +4,24 @@ const User = require("../Models/User");
 const router = express.Router();
 const { buildResponse } = require("./Utils/ResponsePraser");
 
+/**
+ * Users endpoints
+ */
+
+/**
+ * Register a new user to the system
+ */
 router.post("/register", async (req, res) => {
   try {
     const { userID, password } = req.body;
-
     const errors = [];
-    //validate fields (server side or client side or both?)
+    //validate no empty fields
     for (const item of Object.values(req.body)) {
       if (item === "" || item === undefined) {
         errors.push("Please fill all the fields");
       }
     }
-
+    //password length
     if (password.length < 6) {
       errors.push("Password length should be at least 6 characters");
     }
@@ -23,11 +29,13 @@ router.post("/register", async (req, res) => {
     if (errors.length > 0) {
       res.send(buildResponse(400, errors));
     } else {
+      //Validate duplicate user
       const existsCheck = await User.findOne({ userID: userID });
       if (existsCheck) {
         //email is taken
         res.send(buildResponse(400, "ID is already taken"));
       } else {
+        //create new user
         const newUser = new User({
           userID: userID,
           password: password,
@@ -39,7 +47,6 @@ router.post("/register", async (req, res) => {
             newUser.password = hash;
             const insert = await newUser.save();
             if (insert) {
-             // const jwt = generateJWT(newUser);
               res.send(
                 buildResponse("200", {
                   message: "Sucsess",
@@ -51,8 +58,8 @@ router.post("/register", async (req, res) => {
             } else {
               res.send(
                 buildResponse(
-                  "500",
-                  "Saving the user has failed,Please try again later."
+                  "400",
+                  "Couldn't register the new user : " + insert
                 )
               );
             }
@@ -65,7 +72,6 @@ router.post("/register", async (req, res) => {
     res.send(buildResponse("500", e.message));
   }
 });
-
 
 router.post("/login", async (req, res, next) => {
   const { userID, password } = req.body;
@@ -84,6 +90,5 @@ router.post("/login", async (req, res, next) => {
     });
   });
 });
-
 
 module.exports = router;

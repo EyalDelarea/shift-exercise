@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
-
+/**
+ * Users collection will hold user ID number (9 digits)
+ * password (hashed)
+ * joinDate -> timestamp.
+*/
 const User = new mongoose.Schema(
   {
   userID: {

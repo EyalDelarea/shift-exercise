@@ -5,11 +5,14 @@ const { buildResponse } = require("./Utils/ResponsePraser");
 
 router.use(express.json());
 
-//All shifts Route
+/**
+ * All shifts related routes
+ */
+
+//Query for shifts array coresponding to the userOwnerID id
 router.get("/", async (req, res) => {
   try {
-    const shifts = await ShiftSchema.find({ userOwnderId: req.query.userID });
-    console.log(shifts);
+    const shifts = await ShiftSchema.find({ userOwnerID: req.query.userID });
     res.send(buildResponse("200", JSON.stringify(shifts)));
   } catch (e) {
     res.send(buildResponse("400", e));
@@ -18,67 +21,62 @@ router.get("/", async (req, res) => {
   res.status(400);
 });
 
-//Create shifts Route
+/**
+ * Post request to create a new shift
+ *
+ * Two cases :
+ * User already has a Document in the DB.
+ * New user.
+ */
 router.post("/", async (req, res) => {
   const { start, end, userID } = req.body;
-
-  const userDocExists = await ShiftSchema.findOne({ userOwnderId: userID });
-  var userDocRef = userDocExists;
-  if (userDocExists === null) {
-    //create document
-    const shift = new ShiftSchema({
-      shifts: [],
-      userOwnderId: userID,
-    });
-    const newShift = await shift.save();
-    userDocRef = newShift;
-  }
-
-  //continue to add shifts
-  userDocRef.shifts.push({ start: start, end: end });
-
   try {
-    const insrted = await userDocRef.save();
-    res.send(
-      buildResponse(
-        201,
-        JSON.stringify({ msg: "New shift has been created :" + userDocRef })
-      )
-    );
-  } catch (e) {
-    res.status(500).json("There was an erorr trying to create the object " + e);
-  }
-});
-
-router.delete("/:id", async (req, res) => {
-  try {
-    const deleteRes = await ShiftSchema.deleteOne({ _uid: req.body.id });
-    if (deleteRes.n === 1) {
-      res.status(200).json("Items was sucsessfuly deleted");
-    } else {
-      res.status(404).json("Couldn't find object to delete");
+    //check for exsiting document with the _id of the user
+    const userDocExists = await ShiftSchema.findOne({ userOwnerID: userID });
+    //holds refreance to the corrent document which the shift will be added to the array
+    var userDocRef = userDocExists;
+    if (userDocExists === null) {
+      //create document
+      const shift = new ShiftSchema({
+        shifts: [],
+        userOwnerID: userID,
+      });
+      //update the ref
+      userDocRef = await shift.save();
     }
+    //Push the new shift into the array
+    userDocRef.shifts.push({ start: start, end: end });
+    await userDocRef.save();
+    res.send(buildResponse(201, "New shift has been created :" + userDocRef));
   } catch (e) {
-    res.sendStatus(500).json({
-      type: "Internal Error",
-      message: e,
-    });
+    console.log("Error in /shift post request "+e)
+    res.status(500).json("There was an erorr trying to save the object " + e);
   }
 });
 
-//update name attribute
+/**
+ * This endpoints handles the array of shifts inside the Shifts document.
+ * Main uses :
+ * 1. Update exsisting shifts inside the array
+ * 2. Delete a shift from the array
+ *
+ * req should hold userOwnerID and the shifts array
+ * shifts array logic implemented in the frontend
+ */
 router.put("/:id", async (req, res) => {
   const _id = req.params.id;
-  const query = { userOwnderId: _id, shifts: req.body };
-  const search = await ShiftSchema.updateOne(query);
+  const query = { userOwnerID: _id, shifts: req.body };
+  try {
+    const search = await ShiftSchema.updateOne(query);
 
-if(search){
-  res.send(buildResponse(200,"Removed Sucssfuly"))
-}else{
-  res.send(buildResponse(400,"Item not found"))
-}
-
-  
+    if (search) {
+      res.send(buildResponse(200, "Removed Sucssfuly"));
+    } else {
+      res.send(buildResponse(404, "Item not found"));
+    }
+  } catch (e) {
+    res.send(buildResponse(500, "Server Error " + e));
+  }
 });
 
 module.exports = router;
