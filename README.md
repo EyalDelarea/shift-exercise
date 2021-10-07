@@ -6,7 +6,7 @@ manage shifts object which has a start hour and end hour.
 
 
 
-## The site is live on [eyaldelarea.dev](https://eyaldelarea.dev)
+## The site is live on [eyaldelarea.dev](https://shift.eyaldelarea.dev)
 
  ### Hosting Info:
   - The app is hosted on a private server using Nginx routing to different domain names.
